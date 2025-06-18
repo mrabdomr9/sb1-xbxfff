@@ -1,12 +1,10 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
-  ]
-}
-{
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
   "headers": [
     {
-      "source": "/(.*)\\.(html|js|css)$",
+      "source": "/(.*)\\.(js|css|html|png|jpg|jpeg|svg|woff2?)",
       "headers": [
         { "key": "Cache-Control", "value": "no-store" }
       ]
