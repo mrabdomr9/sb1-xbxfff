@@ -36,9 +36,9 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-4">Follow Us</h3>
             <div className="flex space-x-4">
-              <a href="#" className="hover:text-[#04968d] transition-colors">LinkedIn</a>
-              <a href="#" className="hover:text-[#04968d] transition-colors">Twitter</a>
-              <a href="#" className="hover:text-[#04968d] transition-colors">Facebook</a>
+              <a href="https://web.facebook.com/Active.soft.erp" className="hover:text-[#04968d] transition-colors">LinkedIn</a>
+              <a href="https://web.facebook.com/Active.soft.erp" className="hover:text-[#04968d] transition-colors">Twitter</a>
+              <a href="https://web.facebook.com/Active.soft.erp" className="hover:text-[#04968d] transition-colors">Facebook</a>
             </div>
           </div>
         </div>
