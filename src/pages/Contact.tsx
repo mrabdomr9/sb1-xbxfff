@@ -2,9 +2,8 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Mail, Phone, Building2, Clock, Globe2, Send, MessageSquare } from 'lucide-react';
-import { useContactStore } from '../store/contactStore';
-import type { ContactFormData } from '../types/contact';
+import { Mail, Phone, Building2, Clock, Globe2, Send, MessageSquare, Loader2 } from 'lucide-react';
+import { dbOperations } from '../lib/supabase';
 import AnimatedSection from '../components/AnimatedSection';
 import { Splide, SplideSlide } from '@splidejs/react-splide';
 import '@splidejs/react-splide/css';
@@ -13,9 +12,11 @@ const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   phone: z.string().min(11, 'Phone number must be at least 11 digits'),
-  businessField: z.string().min(3, 'Business field must be at least 3 characters'),
-  message: z.string().min(10, 'Message must be at least 10 characters'),
+  business_field: z.string().min(3, 'Business field must be at least 3 characters'),
+  message: z.string().min(10, 'Message must be at least 10 characters').optional(),
 });
+
+type ContactFormData = z.infer<typeof contactSchema>;
 
 const testimonials = [
   {
@@ -66,20 +67,18 @@ const ContactStats = () => {
 };
 
 const Contact = () => {
-  const addSubmission = useContactStore((state) => state.addSubmission);
-
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<ContactFormData & { message: string }>({
+  } = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
   });
 
-  const onSubmit = async (data: ContactFormData & { message: string }) => {
+  const onSubmit = async (data: ContactFormData) => {
     try {
-      addSubmission(data);
+      await dbOperations.createContactSubmission(data);
       reset();
       alert('Thank you for your message! Our team will contact you soon.');
     } catch (error) {
@@ -158,13 +157,13 @@ const Contact = () => {
                       Business Field
                     </label>
                     <input
-                      {...register('businessField')}
+                      {...register('business_field')}
                       type="text"
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#04968d] focus:border-[#04968d]"
                       placeholder="Your industry"
                     />
-                    {errors.businessField && (
-                      <p className="text-red-500 text-sm mt-1">{errors.businessField.message}</p>
+                    {errors.business_field && (
+                      <p className="text-red-500 text-sm mt-1">{errors.business_field.message}</p>
                     )}
                   </div>
                 </div>
@@ -191,8 +190,8 @@ const Contact = () => {
                 >
                   {isSubmitting ? (
                     <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
                       <span>Sending...</span>
-                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
                     </>
                   ) : (
                     <>

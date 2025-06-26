@@ -2,6 +2,7 @@ import React from 'react';
 import DashboardHeader from '../../components/admin/DashboardHeader';
 import DashboardCard from '../../components/admin/DashboardCard';
 import Statistics from '../../components/admin/dashboard/Statistics';
+import DatabaseStatus from '../../components/admin/DatabaseStatus';
 import { dashboardCards } from '../../config/dashboardConfig';
 
 const Dashboard = () => {
@@ -11,6 +12,11 @@ const Dashboard = () => {
         <DashboardHeader />
         
         <Statistics />
+        
+        {/* Database Status Component */}
+        <div className="mb-8">
+          <DatabaseStatus />
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {dashboardCards.map((card, index) => (

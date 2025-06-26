@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useStatsStore } from './store/statsStore';
 import { useStoreSync } from './hooks/useStoreSync';
+import { useAuth } from './hooks/useDatabaseIntegration';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -35,47 +36,55 @@ const VisitorTracker = () => {
   return null;
 };
 
+const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  // Initialize Supabase authentication service
+  useAuth();
+  return <>{children}</>;
+};
+
 function App() {
   // Initialize store sync
   useStoreSync();
 
   return (
     <Router>
-      <VisitorTracker />
-      <div className="flex flex-col min-h-screen">
-        <Header />
-        <main className="flex-grow bg-gray-50">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/clients" element={<Clients />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/brochures" element={<Brochures />} />
-            <Route path="/admin/login" element={<LoginForm />} />
-            <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-            <Route
-              path="/admin/*"
-              element={
-                <ProtectedRoute>
-                  <Routes>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/services" element={<ServicesManager />} />
-                    <Route path="/projects" element={<ProjectsManager />} />
-                    <Route path="/clients" element={<ClientsManager />} />
-                    <Route path="/partners" element={<PartnersManager />} />
-                    <Route path="/users" element={<UserManager />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/contacts" element={<ContactSubmissions />} />
-                    <Route path="/logo" element={<LogoManager />} />
-                    <Route path="/brochures" element={<BrochuresManager />} />
-                  </Routes>
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
+      <AuthProvider>
+        <VisitorTracker />
+        <div className="flex flex-col min-h-screen">
+          <Header />
+          <main className="flex-grow bg-gray-50">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/clients" element={<Clients />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/brochures" element={<Brochures />} />
+              <Route path="/admin/login" element={<LoginForm />} />
+              <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+              <Route
+                path="/admin/*"
+                element={
+                  <ProtectedRoute>
+                    <Routes>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/services" element={<ServicesManager />} />
+                      <Route path="/projects" element={<ProjectsManager />} />
+                      <Route path="/clients" element={<ClientsManager />} />
+                      <Route path="/partners" element={<PartnersManager />} />
+                      <Route path="/users" element={<UserManager />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="/contacts" element={<ContactSubmissions />} />
+                      <Route path="/logo" element={<LogoManager />} />
+                      <Route path="/brochures" element={<BrochuresManager />} />
+                    </Routes>
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
+      </AuthProvider>
     </Router>
   );
 }

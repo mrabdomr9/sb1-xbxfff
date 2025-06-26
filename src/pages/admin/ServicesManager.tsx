@@ -1,81 +1,135 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Pencil, Trash2 } from 'lucide-react';
-import { useServicesStore } from '../../store/servicesStore';
+import { Pencil, Trash2, Loader2 } from 'lucide-react';
+import { useServices } from '../../hooks/useDatabase';
 import ServicePricing from '../../components/admin/services/ServicePricing';
-import type { Service } from '../../types/service';
 
 const serviceSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   features: z.array(z.string()).min(1, 'At least one feature is required'),
-  targetAudience: z.array(z.string()).min(1, 'At least one target audience is required'),
+  target_audience: z.array(z.string()).min(1, 'At least one target audience is required'),
   benefits: z.array(z.string()).min(1, 'At least one benefit is required'),
 });
 
 type ServiceFormData = z.infer<typeof serviceSchema>;
 
 const ServicesManager = () => {
-  const { services, addService, updateService, deleteService } = useServicesStore();
-  const [editingService, setEditingService] = useState<Service | null>(null);
+  const { services, createService, updateService, deleteService, isLoading, error } = useServices();
+  const [editingService, setEditingService] = useState<any | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<ServiceFormData>({
     resolver: zodResolver(serviceSchema),
-    defaultValues: editingService || {
+    defaultValues: {
       features: [''],
-      targetAudience: [''],
+      target_audience: [''],
       benefits: ['']
     }
   });
 
-  const handleUpdatePricing = (serviceId: string, pricing: Service['pricing']) => {
+  const watchedFeatures = watch('features');
+  const watchedTargetAudience = watch('target_audience');
+  const watchedBenefits = watch('benefits');
+
+  const handleUpdatePricing = async (serviceId: string, pricing: any) => {
     const service = services.find(s => s.id === serviceId);
     if (service) {
-      updateService(serviceId, { ...service, pricing });
+      await updateService(serviceId, { ...service, pricing });
     }
   };
 
-  const onSubmit = (data: ServiceFormData) => {
-    if (editingService) {
-      updateService(editingService.id, {
-        ...data,
-        pricing: editingService.pricing
+  const onSubmit = async (data: ServiceFormData) => {
+    setIsSubmitting(true);
+    try {
+      if (editingService) {
+        await updateService(editingService.id, {
+          ...data,
+          pricing: editingService.pricing
+        });
+        setEditingService(null);
+      } else {
+        await createService(data);
+      }
+      reset({
+        features: [''],
+        target_audience: [''],
+        benefits: ['']
       });
-      setEditingService(null);
-    } else {
-      addService(data);
+    } catch (error) {
+      console.error('Failed to save service:', error);
+    } finally {
+      setIsSubmitting(false);
     }
-    reset();
   };
 
-  const startEditing = (service: Service) => {
+  const startEditing = (service: any) => {
     setEditingService(service);
     setValue('title', service.title);
     setValue('description', service.description);
-    setValue('features', service.features);
-    setValue('targetAudience', service.targetAudience);
-    setValue('benefits', service.benefits);
+    setValue('features', service.features || ['']);
+    setValue('target_audience', service.target_audience || ['']);
+    setValue('benefits', service.benefits || ['']);
   };
 
-  const handleArrayField = (field: 'features' | 'targetAudience' | 'benefits', index: number, value: string) => {
-    const currentValues = field === 'features' 
-      ? services.features 
-      : field === 'targetAudience' 
-        ? services.targetAudience 
-        : services.benefits;
-    
-    const newValues = [...currentValues];
-    newValues[index] = value;
-    setValue(field, newValues);
+  const handleDeleteService = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this service?')) {
+      await deleteService(id);
+    }
   };
+
+  const addArrayField = (field: 'features' | 'target_audience' | 'benefits') => {
+    const currentValues = field === 'features' 
+      ? watchedFeatures 
+      : field === 'target_audience' 
+        ? watchedTargetAudience 
+        : watchedBenefits;
+    
+    setValue(field, [...currentValues, '']);
+  };
+
+  const removeArrayField = (field: 'features' | 'target_audience' | 'benefits', index: number) => {
+    const currentValues = field === 'features' 
+      ? watchedFeatures 
+      : field === 'target_audience' 
+        ? watchedTargetAudience 
+        : watchedBenefits;
+    
+    if (currentValues.length > 1) {
+      const newValues = currentValues.filter((_, i) => i !== index);
+      setValue(field, newValues);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-[#04968d]" />
+          <span className="ml-2 text-gray-600">Loading services...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <p className="text-red-600">Error loading services: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-6 py-8">
@@ -111,39 +165,51 @@ const ServicesManager = () => {
             </div>
 
             {/* Dynamic Arrays */}
-            {['features', 'targetAudience', 'benefits'].map((field) => (
+            {(['features', 'target_audience', 'benefits'] as const).map((field) => (
               <div key={field}>
-                <label className="block text-sm font-medium text-gray-700 capitalize">
-                  {field.replace(/([A-Z])/g, ' $1').trim()}
+                <label className="block text-sm font-medium text-gray-700 capitalize mb-2">
+                  {field.replace('_', ' ')}
                 </label>
                 <div className="space-y-2">
-                  {register(field as 'features' | 'targetAudience' | 'benefits').value?.map((_, index) => (
-                    <input
-                      key={index}
-                      {...register(`${field}.${index}`)}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#04968d] focus:ring-[#04968d]"
-                      placeholder={`Enter ${field.replace(/([A-Z])/g, ' $1').trim().toLowerCase()}`}
-                    />
+                  {(field === 'features' ? watchedFeatures : 
+                    field === 'target_audience' ? watchedTargetAudience : 
+                    watchedBenefits).map((_, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        {...register(`${field}.${index}`)}
+                        className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-[#04968d] focus:ring-[#04968d]"
+                        placeholder={`Enter ${field.replace('_', ' ')}`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeArrayField(field, index)}
+                        className="px-3 py-2 text-red-600 hover:text-red-800"
+                      >
+                        ×
+                      </button>
+                    </div>
                   ))}
                   <button
                     type="button"
-                    onClick={() => {
-                      const currentValues = register(field as 'features' | 'targetAudience' | 'benefits').value || [];
-                      setValue(field as 'features' | 'targetAudience' | 'benefits', [...currentValues, '']);
-                    }}
+                    onClick={() => addArrayField(field)}
                     className="text-[#04968d] text-sm hover:text-opacity-80"
                   >
-                    + Add more
+                    + Add {field.replace('_', ' ')}
                   </button>
                 </div>
+                {errors[field] && (
+                  <p className="text-red-500 text-sm mt-1">{errors[field]?.message}</p>
+                )}
               </div>
             ))}
 
             <div className="flex space-x-4">
               <button
                 type="submit"
-                className="bg-[#04968d] text-white px-4 py-2 rounded-md hover:bg-opacity-90"
+                disabled={isSubmitting}
+                className="bg-[#04968d] text-white px-4 py-2 rounded-md hover:bg-opacity-90 disabled:opacity-50 flex items-center"
               >
+                {isSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                 {editingService ? 'Update Service' : 'Add Service'}
               </button>
               {editingService && (
@@ -151,7 +217,11 @@ const ServicesManager = () => {
                   type="button"
                   onClick={() => {
                     setEditingService(null);
-                    reset();
+                    reset({
+                      features: [''],
+                      target_audience: [''],
+                      benefits: ['']
+                    });
                   }}
                   className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-opacity-90"
                 >
@@ -176,7 +246,7 @@ const ServicesManager = () => {
                 <div className="mt-4">
                   <h4 className="font-medium text-[#04968d] mb-2">Features</h4>
                   <ul className="list-disc list-inside text-gray-600">
-                    {service.features.map((feature, index) => (
+                    {service.features?.map((feature: string, index: number) => (
                       <li key={index}>{feature}</li>
                     ))}
                   </ul>
@@ -185,7 +255,7 @@ const ServicesManager = () => {
                 <div className="mt-4">
                   <h4 className="font-medium text-[#04968d] mb-2">Target Audience</h4>
                   <ul className="list-disc list-inside text-gray-600">
-                    {service.targetAudience.map((audience, index) => (
+                    {service.target_audience?.map((audience: string, index: number) => (
                       <li key={index}>{audience}</li>
                     ))}
                   </ul>
@@ -194,7 +264,7 @@ const ServicesManager = () => {
                 <div className="mt-4">
                   <h4 className="font-medium text-[#04968d] mb-2">Benefits</h4>
                   <ul className="list-disc list-inside text-gray-600">
-                    {service.benefits.map((benefit, index) => (
+                    {service.benefits?.map((benefit: string, index: number) => (
                       <li key={index}>{benefit}</li>
                     ))}
                   </ul>
@@ -213,7 +283,7 @@ const ServicesManager = () => {
                     <Pencil className="h-5 w-5" />
                   </button>
                   <button
-                    onClick={() => deleteService(service.id)}
+                    onClick={() => handleDeleteService(service.id)}
                     className="text-red-500 hover:text-opacity-80"
                   >
                     <Trash2 className="h-5 w-5" />
