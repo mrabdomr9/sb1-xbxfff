@@ -5,10 +5,10 @@ import { useAuthStore } from '../../store/authStore';
 
 const DashboardHeader = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const { user, clearAuth } = useAuthStore();
 
   const handleLogout = () => {
-    logout();
+    clearAuth();
     navigate('/admin/login');
   };
 

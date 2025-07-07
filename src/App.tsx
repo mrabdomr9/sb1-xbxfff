@@ -22,6 +22,8 @@ import Settings from './pages/admin/Settings';
 import ContactSubmissions from './pages/admin/ContactSubmissions';
 import LogoManager from './pages/admin/LogoManager';
 import BrochuresManager from './pages/admin/BrochuresManager';
+import PortfolioManager from './pages/admin/PortfolioManager';
+import CRUDTestingDashboard from './pages/admin/CRUDTestingDashboard';
 
 const VisitorTracker = () => {
   const location = useLocation();
@@ -76,6 +78,8 @@ function App() {
                       <Route path="/contacts" element={<ContactSubmissions />} />
                       <Route path="/logo" element={<LogoManager />} />
                       <Route path="/brochures" element={<BrochuresManager />} />
+                      <Route path="/portfolio" element={<PortfolioManager />} />
+                      <Route path="/crud-testing" element={<CRUDTestingDashboard />} />
                     </Routes>
                   </ProtectedRoute>
                 }

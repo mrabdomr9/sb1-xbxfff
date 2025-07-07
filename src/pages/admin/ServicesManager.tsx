@@ -4,7 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Pencil, Trash2, Loader2 } from 'lucide-react';
 import { useServices } from '../../hooks/useDatabase';
+import { useFormAutoSave } from '../../hooks/useFormAutoSave';
 import ServicePricing from '../../components/admin/services/ServicePricing';
+import AutoSaveIndicator from '../../components/admin/AutoSaveIndicator';
 
 const serviceSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -35,6 +37,37 @@ const ServicesManager = () => {
       target_audience: [''],
       benefits: ['']
     }
+  });
+
+  const watchedData = watch();
+
+  // Auto-save functionality for form data
+  const autoSave = useFormAutoSave({
+    formData: watchedData,
+    onSave: async (data) => {
+      if (!editingService) return { success: false, error: 'No service selected for editing' };
+      
+      try {
+        const result = await updateService(editingService.id, {
+          ...data,
+          pricing: editingService.pricing
+        });
+        
+        if (result) {
+          return { success: true };
+        } else {
+          return { success: false, error: 'Failed to save service' };
+        }
+      } catch (error) {
+        return { 
+          success: false, 
+          error: error instanceof Error ? error.message : 'Unknown error' 
+        };
+      }
+    },
+    validationSchema: serviceSchema,
+    enableAutoSave: !!editingService, // Only auto-save when editing
+    debounceMs: 3000
   });
 
   const watchedFeatures = watch('features');
@@ -79,6 +112,15 @@ const ServicesManager = () => {
     setValue('features', service.features || ['']);
     setValue('target_audience', service.target_audience || ['']);
     setValue('benefits', service.benefits || ['']);
+  };
+
+  const cancelEditing = () => {
+    setEditingService(null);
+    reset({
+      features: [''],
+      target_audience: [''],
+      benefits: ['']
+    });
   };
 
   const handleDeleteService = async (id: string) => {
@@ -133,13 +175,37 @@ const ServicesManager = () => {
 
   return (
     <div className="container mx-auto px-6 py-8">
-      <h1 className="text-3xl font-bold mb-8">Manage Services</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold">Manage Services</h1>
+        {editingService && (
+          <AutoSaveIndicator
+            isSaving={autoSave.isSaving}
+            lastSaved={autoSave.lastSaved}
+            hasUnsavedChanges={autoSave.hasUnsavedChanges}
+            saveError={autoSave.saveError}
+            onForceSave={autoSave.forceSave}
+            onRetry={autoSave.forceSave}
+          />
+        )}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div>
           <h2 className="text-xl font-semibold mb-4">
             {editingService ? 'Edit Service' : 'Add New Service'}
           </h2>
+          
+          {editingService && autoSave.validationErrors.length > 0 && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+              <h4 className="text-red-800 font-medium mb-2">Validation Errors:</h4>
+              <ul className="text-red-700 text-sm list-disc list-inside">
+                {autoSave.validationErrors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700">Title</label>
@@ -215,14 +281,7 @@ const ServicesManager = () => {
               {editingService && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setEditingService(null);
-                    reset({
-                      features: [''],
-                      target_audience: [''],
-                      benefits: ['']
-                    });
-                  }}
+                  onClick={cancelEditing}
                   className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-opacity-90"
                 >
                   Cancel

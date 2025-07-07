@@ -1,4 +1,4 @@
-import { Database, Monitor, Users, Building, Image, FileText, Settings, MessageSquare, Briefcase, Building2 } from 'lucide-react';
+import { Database, Monitor, Users, Building, Image, FileText, Settings, MessageSquare, Briefcase, Building2, TestTube, Upload } from 'lucide-react';
 
 export const dashboardCards = [
   {
@@ -54,5 +54,17 @@ export const dashboardCards = [
     description: 'View and manage contact form submissions',
     icon: MessageSquare,
     link: '/admin/contacts'
+  },
+  {
+    title: 'Portfolio Manager',
+    description: 'Populate comprehensive portfolio data',
+    icon: Upload,
+    link: '/admin/portfolio'
+  },
+  {
+    title: 'CRUD Testing',
+    description: 'Test all database operations',
+    icon: TestTube,
+    link: '/admin/crud-testing'
   }
 ];

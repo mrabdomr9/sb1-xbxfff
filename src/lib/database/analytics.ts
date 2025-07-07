@@ -198,7 +198,7 @@ class AnalyticsService {
         .from('operation_logs')
         .select(`
           user_id,
-          action,
+          operation,
           timestamp,
           table_name,
           record_id,
@@ -212,7 +212,7 @@ class AnalyticsService {
       return (data || []).map(log => ({
         user_id: log.user_id,
         username: log.users.username,
-        action: log.action,
+        action: log.operation,
         timestamp: log.timestamp,
         table_name: log.table_name,
         record_id: log.record_id

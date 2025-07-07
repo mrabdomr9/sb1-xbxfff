@@ -183,11 +183,14 @@ class DatabaseOperations<T extends BaseEntity> {
       // Sanitize string inputs
       const sanitizedData = this.sanitizeData(data)
       
-      // Add updated_at timestamp
-      const updateData = {
-        ...sanitizedData,
-        updated_at: new Date().toISOString()
-      }
+      // Add updated_at timestamp only for tables that have this column
+      const tablesWithoutUpdatedAt = ['contact_submissions', 'system_metrics', 'user_activity_logs', 'operation_logs', 'cache_invalidation_logs', 'api_rate_limits']
+      const updateData = tablesWithoutUpdatedAt.includes(this.tableName) 
+        ? sanitizedData
+        : {
+            ...sanitizedData,
+            updated_at: new Date().toISOString()
+          }
 
       const result = await withRetry(async () => {
         const { data: updatedData, error } = await supabase
@@ -333,12 +336,22 @@ class DatabaseOperations<T extends BaseEntity> {
       const user = authService.getCurrentUser()
       if (!user) return
 
+      // Ensure operation value matches the database constraint
+      // The constraint allows: 'create', 'update', 'delete', 'select'
+      const validOperations = ['create', 'update', 'delete', 'select']
+      const normalizedOperation = operation.toLowerCase()
+      
+      if (!validOperations.includes(normalizedOperation)) {
+        console.warn(`Invalid operation type: ${operation}. Skipping log.`)
+        return
+      }
+
       await supabase
         .from('operation_logs')
         .insert({
           user_id: user.id,
           table_name: this.tableName,
-          operation,
+          operation: normalizedOperation, // Use normalized lowercase operation
           record_id: recordId,
           timestamp: new Date().toISOString()
         })

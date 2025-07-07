@@ -4,6 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Pencil, Trash2, MoveUp, MoveDown } from 'lucide-react';
 import { useProjectStore } from '../../store/projectStore';
+import { useFormAutoSave } from '../../hooks/useFormAutoSave';
+import AutoSaveIndicator from '../../components/admin/AutoSaveIndicator';
 import type { Project } from '../../types/project';
 
 const projectSchema = z.object({
@@ -22,10 +24,34 @@ const ProjectsManager = () => {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
-    defaultValues: editingProject || undefined,
+  });
+
+  const watchedData = watch();
+
+  // Auto-save functionality
+  const autoSave = useFormAutoSave({
+    formData: watchedData,
+    onSave: async (data) => {
+      if (!editingProject) return { success: false, error: 'No project selected for editing' };
+      
+      try {
+        updateProject(editingProject.id, data);
+        return { success: true };
+      } catch (error) {
+        return { 
+          success: false, 
+          error: error instanceof Error ? error.message : 'Unknown error' 
+        };
+      }
+    },
+    validationSchema: projectSchema,
+    enableAutoSave: !!editingProject,
+    debounceMs: 2500
   });
 
   const onSubmit = (data: ProjectFormData) => {
@@ -38,6 +64,18 @@ const ProjectsManager = () => {
     reset();
   };
 
+  const startEditing = (project: Project) => {
+    setEditingProject(project);
+    setValue('title', project.title);
+    setValue('description', project.description);
+    setValue('image', project.image);
+  };
+
+  const cancelEditing = () => {
+    setEditingProject(null);
+    reset();
+  };
+
   const handleMoveProject = (index: number, direction: 'up' | 'down') => {
     const newIndex = direction === 'up' ? index - 1 : index + 1;
     if (newIndex >= 0 && newIndex < projects.length) {
@@ -47,13 +85,37 @@ const ProjectsManager = () => {
 
   return (
     <div className="container mx-auto px-6 py-8">
-      <h1 className="text-3xl font-bold mb-8">Manage Projects</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold">Manage Projects</h1>
+        {editingProject && (
+          <AutoSaveIndicator
+            isSaving={autoSave.isSaving}
+            lastSaved={autoSave.lastSaved}
+            hasUnsavedChanges={autoSave.hasUnsavedChanges}
+            saveError={autoSave.saveError}
+            onForceSave={autoSave.forceSave}
+            onRetry={autoSave.forceSave}
+          />
+        )}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div>
           <h2 className="text-xl font-semibold mb-4">
             {editingProject ? 'Edit Project' : 'Add New Project'}
           </h2>
+          
+          {editingProject && autoSave.validationErrors.length > 0 && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+              <h4 className="text-red-800 font-medium mb-2">Validation Errors:</h4>
+              <ul className="text-red-700 text-sm list-disc list-inside">
+                {autoSave.validationErrors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Title</label>
@@ -101,10 +163,7 @@ const ProjectsManager = () => {
               {editingProject && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setEditingProject(null);
-                    reset();
-                  }}
+                  onClick={cancelEditing}
                   className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-opacity-90"
                 >
                   Cancel
@@ -149,7 +208,7 @@ const ProjectsManager = () => {
                     <MoveDown className="h-5 w-5" />
                   </button>
                   <button
-                    onClick={() => setEditingProject(project)}
+                    onClick={() => startEditing(project)}
                     className="text-[#04968d] hover:text-opacity-80"
                   >
                     <Pencil className="h-5 w-5" />
