@@ -202,6 +202,10 @@ export function useBrochures() {
 export function useContactSubmissions() {
   const db = useDatabase('contact_submissions')
   
+  useEffect(() => {
+    db.loadData({ orderBy: { column: 'created_at', ascending: false } })
+  }, [])
+  
   const createSubmission = useCallback(async (submissionData: any) => {
     return contactOperations.createSubmission(submissionData)
   }, [])

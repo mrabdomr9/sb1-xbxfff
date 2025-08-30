@@ -1,21 +1,43 @@
 import React, { useState } from 'react';
-import { useClientStore } from '../../store/clientStore';
+import { useClients } from '../../hooks/useDatabaseIntegration';
+import { Loader2 } from 'lucide-react';
 import ClientForm from '../../components/admin/clients/ClientForm';
 import ClientCard from '../../components/admin/clients/ClientCard';
 import type { Client } from '../../types/client';
 
 const ClientsManager = () => {
-  const { clients, addClient, updateClient, deleteClient } = useClientStore();
+  const { data: clients, create, update, remove, loading, error } = useClients();
   const [editingClient, setEditingClient] = useState<Client | null>(null);
 
   const handleSubmit = (data: Omit<Client, 'id'>) => {
     if (editingClient) {
-      updateClient(editingClient.id, data);
+      update(editingClient.id, data);
       setEditingClient(null);
     } else {
-      addClient(data);
+      create(data);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-[#04968d]" />
+          <span className="ml-2 text-gray-600">Loading clients...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <p className="text-red-600">Error loading clients: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-6 py-8">
@@ -36,12 +58,12 @@ const ClientsManager = () => {
         <div>
           <h2 className="text-xl font-semibold mb-4">Current Clients</h2>
           <div className="space-y-4">
-            {clients.map((client) => (
+            {(clients || []).map((client) => (
               <ClientCard
                 key={client.id}
                 client={client}
                 onEdit={setEditingClient}
-                onDelete={deleteClient}
+                onDelete={remove}
               />
             ))}
           </div>

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Pencil, Trash2 } from 'lucide-react';
-import { usePartnerStore } from '../../store/partnerStore';
+import { Pencil, Trash2, Loader2 } from 'lucide-react';
+import { usePartners } from '../../hooks/useDatabaseIntegration';
 import type { Partner } from '../../types/partner';
 
 const partnerSchema = z.object({
@@ -14,7 +14,7 @@ const partnerSchema = z.object({
 type PartnerFormData = z.infer<typeof partnerSchema>;
 
 const PartnersManager = () => {
-  const { partners, addPartner, updatePartner, deletePartner } = usePartnerStore();
+  const { data: partners, create, update, remove, loading, error } = usePartners();
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
 
   const {
@@ -29,13 +29,34 @@ const PartnersManager = () => {
 
   const onSubmit = (data: PartnerFormData) => {
     if (editingPartner) {
-      updatePartner(editingPartner.id, data);
+      update(editingPartner.id, data);
       setEditingPartner(null);
     } else {
-      addPartner(data);
+      create(data);
     }
     reset();
   };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-[#04968d]" />
+          <span className="ml-2 text-gray-600">Loading partners...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <p className="text-red-600">Error loading partners: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-6 py-8">
@@ -97,7 +118,7 @@ const PartnersManager = () => {
         <div>
           <h2 className="text-xl font-semibold mb-4">Current Partners</h2>
           <div className="grid grid-cols-2 gap-4">
-            {partners.map((partner) => (
+            {(partners || []).map((partner) => (
               <div
                 key={partner.id}
                 className="bg-white p-4 rounded-lg shadow-md"
@@ -116,7 +137,7 @@ const PartnersManager = () => {
                     <Pencil className="h-5 w-5" />
                   </button>
                   <button
-                    onClick={() => deletePartner(partner.id)}
+                    onClick={() => remove(partner.id)}
                     className="text-red-500 hover:text-opacity-80"
                   >
                     <Trash2 className="h-5 w-5" />

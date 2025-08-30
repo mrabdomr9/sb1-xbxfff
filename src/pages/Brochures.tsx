@@ -1,6 +1,6 @@
 import React from 'react';
 import { FileDown, FileText, Calendar, Download } from 'lucide-react';
-import { useBrochureStore } from '../store/brochureStore';
+import { useBrochures } from '../hooks/useDatabaseIntegration';
 import AnimatedSection from '../components/AnimatedSection';
 import { Splide, SplideSlide } from '@splidejs/react-splide';
 import '@splidejs/react-splide/css';
@@ -28,7 +28,7 @@ const BrochureStats = () => {
 };
 
 const Brochures = () => {
-  const { brochures } = useBrochureStore();
+  const { data: brochures, loading, error, refresh } = useBrochures();
 
   const handleDownload = (file: string, fileName: string) => {
     const link = document.createElement('a');
@@ -39,6 +39,58 @@ const Brochures = () => {
     document.body.removeChild(link);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen py-20 bg-gradient-to-b from-white to-gray-50">
+        <div className="container mx-auto px-6">
+          <AnimatedSection>
+            <div className="text-center mb-16">
+              <h1 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
+                Service Brochures
+              </h1>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Download our comprehensive service brochures to learn more about our enterprise solutions
+              </p>
+            </div>
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#04968d]"></div>
+              <span className="ml-3 text-gray-600">Loading brochures...</span>
+            </div>
+          </AnimatedSection>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen py-20 bg-gradient-to-b from-white to-gray-50">
+        <div className="container mx-auto px-6">
+          <AnimatedSection>
+            <div className="text-center mb-16">
+              <h1 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
+                Service Brochures
+              </h1>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Download our comprehensive service brochures to learn more about our enterprise solutions
+              </p>
+            </div>
+            <div className="text-center py-20">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+                <p className="text-red-600 mb-4">Failed to load brochures: {error}</p>
+                <button
+                  onClick={refresh}
+                  className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          </AnimatedSection>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen py-20 bg-gradient-to-b from-white to-gray-50">
       <div className="container mx-auto px-6">
@@ -71,7 +123,7 @@ const Brochures = () => {
             }}
             className="brochures-slider mb-16"
           >
-            {brochures.map((brochure) => (
+            {(brochures || []).map((brochure) => (
               <SplideSlide key={brochure.id}>
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden h-full group hover:shadow-xl transition-all duration-300 flex flex-col">
                   <div className="p-8 flex-grow">
@@ -82,7 +134,7 @@ const Brochures = () => {
                       {brochure.name}
                     </h3>
                     <p className="text-sm text-gray-500 mb-4">
-                      Last Updated: {new Date(brochure.createdAt).toLocaleDateString()}
+                      Last Updated: {new Date(brochure.created_at || brochure.createdAt).toLocaleDateString()}
                     </p>
                     <div className="h-1 w-0 group-hover:w-full bg-[#04968d]/20 transition-all duration-300" />
                   </div>

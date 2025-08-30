@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Upload, Pencil, Trash2 } from 'lucide-react';
-import { useBrochureStore } from '../../store/brochureStore';
+import { Upload, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { useBrochures } from '../../hooks/useDatabaseIntegration';
 import type { Brochure } from '../../types/brochure';
 
 const brochureSchema = z.object({
@@ -13,7 +13,7 @@ const brochureSchema = z.object({
 type BrochureFormData = z.infer<typeof brochureSchema>;
 
 const BrochuresManager = () => {
-  const { brochures, addBrochure, updateBrochure, deleteBrochure } = useBrochureStore();
+  const { data: brochures, create, update, remove, loading, error } = useBrochures();
   const [editingBrochure, setEditingBrochure] = useState<Brochure | null>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
@@ -46,13 +46,13 @@ const BrochuresManager = () => {
     }
 
     if (editingBrochure) {
-      updateBrochure(editingBrochure.id, {
+      update(editingBrochure.id, {
         ...data,
         file: selectedFile || editingBrochure.file,
       });
       setEditingBrochure(null);
     } else {
-      addBrochure({
+      create({
         ...data,
         file: selectedFile!,
       });
@@ -60,6 +60,27 @@ const BrochuresManager = () => {
     reset();
     setSelectedFile(null);
   };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-[#04968d]" />
+          <span className="ml-2 text-gray-600">Loading brochures...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <p className="text-red-600">Error loading brochures: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-6 py-8">
@@ -139,7 +160,7 @@ const BrochuresManager = () => {
         <div>
           <h2 className="text-xl font-semibold mb-4">Current Brochures</h2>
           <div className="space-y-4">
-            {brochures.map((brochure) => (
+            {(brochures || []).map((brochure) => (
               <div
                 key={brochure.id}
                 className="bg-white p-4 rounded-lg shadow-md"
@@ -148,7 +169,7 @@ const BrochuresManager = () => {
                   <div>
                     <h3 className="font-medium">{brochure.name}</h3>
                     <p className="text-sm text-gray-500">
-                      Added: {new Date(brochure.createdAt).toLocaleDateString()}
+                      Added: {new Date(brochure.created_at || brochure.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="flex space-x-2">
@@ -159,7 +180,7 @@ const BrochuresManager = () => {
                       <Pencil className="h-5 w-5" />
                     </button>
                     <button
-                      onClick={() => deleteBrochure(brochure.id)}
+                     onClick={() => remove(brochure.id)}
                       className="text-red-500 hover:text-opacity-80"
                     >
                       <Trash2 className="h-5 w-5" />

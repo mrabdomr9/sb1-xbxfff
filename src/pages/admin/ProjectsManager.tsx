@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Pencil, Trash2, MoveUp, MoveDown } from 'lucide-react';
-import { useProjectStore } from '../../store/projectStore';
+import { useProjects } from '../../hooks/useDatabaseIntegration';
 import { useFormAutoSave } from '../../hooks/useFormAutoSave';
 import AutoSaveIndicator from '../../components/admin/AutoSaveIndicator';
 import type { Project } from '../../types/project';
@@ -17,7 +17,7 @@ const projectSchema = z.object({
 type ProjectFormData = z.infer<typeof projectSchema>;
 
 const ProjectsManager = () => {
-  const { projects, addProject, updateProject, deleteProject, reorderProjects } = useProjectStore();
+  const { data: projects, create, update, remove, loading, error, reorderProjects } = useProjects();
   const [editingProject, setEditingProject] = useState<Project | null>(null);
 
   const {
@@ -40,8 +40,12 @@ const ProjectsManager = () => {
       if (!editingProject) return { success: false, error: 'No project selected for editing' };
       
       try {
-        updateProject(editingProject.id, data);
-        return { success: true };
+        const result = await update(editingProject.id, data);
+        if (result.data) {
+          return { success: true };
+        } else {
+          return { success: false, error: result.error || 'Failed to save project' };
+        }
       } catch (error) {
         return { 
           success: false, 
@@ -56,10 +60,10 @@ const ProjectsManager = () => {
 
   const onSubmit = (data: ProjectFormData) => {
     if (editingProject) {
-      updateProject(editingProject.id, data);
+      update(editingProject.id, data);
       setEditingProject(null);
     } else {
-      addProject(data);
+      create(data);
     }
     reset();
   };
@@ -78,10 +82,31 @@ const ProjectsManager = () => {
 
   const handleMoveProject = (index: number, direction: 'up' | 'down') => {
     const newIndex = direction === 'up' ? index - 1 : index + 1;
-    if (newIndex >= 0 && newIndex < projects.length) {
+    if (newIndex >= 0 && newIndex < (projects?.length || 0)) {
       reorderProjects(index, newIndex);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-[#04968d]" />
+          <span className="ml-2 text-gray-600">Loading projects...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <p className="text-red-600">Error loading projects: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-6 py-8">
@@ -176,7 +201,7 @@ const ProjectsManager = () => {
         <div>
           <h2 className="text-xl font-semibold mb-4">Current Projects</h2>
           <div className="space-y-4">
-            {projects.map((project, index) => (
+            {(projects || []).map((project, index) => (
               <div
                 key={project.id}
                 className="bg-white p-4 rounded-lg shadow-md"
@@ -202,7 +227,7 @@ const ProjectsManager = () => {
                   </button>
                   <button
                     onClick={() => handleMoveProject(index, 'down')}
-                    disabled={index === projects.length - 1}
+                    disabled={index === (projects?.length || 0) - 1}
                     className="text-gray-600 hover:text-[#04968d] disabled:opacity-50"
                   >
                     <MoveDown className="h-5 w-5" />
@@ -214,7 +239,7 @@ const ProjectsManager = () => {
                     <Pencil className="h-5 w-5" />
                   </button>
                   <button
-                    onClick={() => deleteProject(project.id)}
+                    onClick={() => remove(project.id)}
                     className="text-red-500 hover:text-opacity-80"
                   >
                     <Trash2 className="h-5 w-5" />

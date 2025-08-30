@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Pencil, Trash2, Loader2 } from 'lucide-react';
-import { useServices } from '../../hooks/useDatabase';
+import { useServices } from '../../hooks/useDatabaseIntegration';
 import { useFormAutoSave } from '../../hooks/useFormAutoSave';
 import ServicePricing from '../../components/admin/services/ServicePricing';
 import AutoSaveIndicator from '../../components/admin/AutoSaveIndicator';
@@ -19,7 +19,7 @@ const serviceSchema = z.object({
 type ServiceFormData = z.infer<typeof serviceSchema>;
 
 const ServicesManager = () => {
-  const { services, createService, updateService, deleteService, isLoading, error } = useServices();
+  const { data: services, create, update, remove, loading, error, refresh } = useServices();
   const [editingService, setEditingService] = useState<any | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -48,15 +48,15 @@ const ServicesManager = () => {
       if (!editingService) return { success: false, error: 'No service selected for editing' };
       
       try {
-        const result = await updateService(editingService.id, {
+        const result = await update(editingService.id, {
           ...data,
           pricing: editingService.pricing
         });
         
-        if (result) {
+        if (result.data) {
           return { success: true };
         } else {
-          return { success: false, error: 'Failed to save service' };
+          return { success: false, error: result.error || 'Failed to save service' };
         }
       } catch (error) {
         return { 
@@ -77,7 +77,7 @@ const ServicesManager = () => {
   const handleUpdatePricing = async (serviceId: string, pricing: any) => {
     const service = services.find(s => s.id === serviceId);
     if (service) {
-      await updateService(serviceId, { ...service, pricing });
+      await update(serviceId, { ...service, pricing });
     }
   };
 
@@ -85,13 +85,18 @@ const ServicesManager = () => {
     setIsSubmitting(true);
     try {
       if (editingService) {
-        await updateService(editingService.id, {
+        const result = await update(editingService.id, {
           ...data,
           pricing: editingService.pricing
         });
-        setEditingService(null);
+        if (result.data) {
+          setEditingService(null);
+        }
       } else {
-        await createService(data);
+        const result = await create(data);
+        if (!result.data) {
+          throw new Error(result.error || 'Failed to create service');
+        }
       }
       reset({
         features: [''],
@@ -125,7 +130,7 @@ const ServicesManager = () => {
 
   const handleDeleteService = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this service?')) {
-      await deleteService(id);
+      await remove(id);
     }
   };
 
@@ -152,7 +157,7 @@ const ServicesManager = () => {
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="container mx-auto px-6 py-8">
         <div className="flex items-center justify-center h-64">
@@ -294,7 +299,7 @@ const ServicesManager = () => {
         <div>
           <h2 className="text-xl font-semibold mb-4">Current Services</h2>
           <div className="space-y-6">
-            {services.map((service) => (
+            {(services || []).map((service) => (
               <div
                 key={service.id}
                 className="bg-white p-6 rounded-lg shadow"
