@@ -1,22 +1,56 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Check, Users, Target, Gift, Loader2 } from 'lucide-react';
 import { Splide, SplideSlide } from '@splidejs/react-splide';
 import '@splidejs/react-splide/css';
-import { useServices } from '../hooks/useDatabase';
+import { useServices } from '../hooks/useDatabaseIntegration';
+
+const ErrorMessage = ({ message, onRetry }: { message: string; onRetry: () => void }) => (
+  <div className="min-h-screen py-20 bg-gradient-to-b from-white to-gray-50">
+    <div className="container mx-auto px-4 sm:px-6">
+      <div className="text-center mb-16">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 gradient-text">
+          Our Services
+        </h1>
+        <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+          Discover our comprehensive range of enterprise solutions designed to transform your business
+        </p>
+      </div>
+      <div className="text-center py-20">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md mx-auto">
+          <p className="text-red-600 mb-4">{message}</p>
+          <button
+            onClick={onRetry}
+            className="bg-red-600 text-white px-6 py-3 rounded-md hover:bg-red-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 const Services = () => {
-  const { services, isLoading, error } = useServices();
+  const { data: services, loading, error, refresh } = useServices();
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
     navigate('/contact');
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen py-20 bg-gradient-to-b from-white to-gray-50">
         <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 gradient-text">
+              Our Services
+            </h1>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+              Discover our comprehensive range of enterprise solutions designed to transform your business
+            </p>
+          </div>
           <div className="flex items-center justify-center h-64">
             <Loader2 className="h-8 w-8 animate-spin text-[#04968d]" />
             <span className="ml-2 text-gray-600">Loading services...</span>
@@ -27,15 +61,7 @@ const Services = () => {
   }
 
   if (error) {
-    return (
-      <div className="min-h-screen py-20 bg-gradient-to-b from-white to-gray-50">
-        <div className="container mx-auto px-6">
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <p className="text-red-600">Error loading services: {error}</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <ErrorMessage message={`Failed to load services: ${error}`} onRetry={refresh} />;
   }
 
   return (
@@ -198,8 +224,12 @@ const Services = () => {
             ))}
           </Splide>
         ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-600">No services available at the moment.</p>
+          <div className="text-center py-20">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 max-w-md mx-auto">
+              <Gift className="w-16 h-16 text-blue-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-blue-800 mb-2">Services Coming Soon</h3>
+              <p className="text-blue-600">We're preparing our comprehensive service offerings. Check back soon!</p>
+            </div>
           </div>
         )}
       </div>

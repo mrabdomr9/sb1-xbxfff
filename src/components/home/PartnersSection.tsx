@@ -1,11 +1,88 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Splide, SplideSlide } from '@splidejs/react-splide';
 import '@splidejs/react-splide/css';
-import { usePartnerStore } from '../../store/partnerStore';
+import { usePartners } from '../../hooks/useDatabaseIntegration';
 import AnimatedSection from '../AnimatedSection';
 
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center py-20">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#04968d]"></div>
+    <span className="ml-3 text-gray-600">Loading partners...</span>
+  </div>
+);
+
+const ErrorMessage = ({ message, onRetry }: { message: string; onRetry: () => void }) => (
+  <div className="text-center py-20">
+    <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+      <p className="text-red-600 mb-4">{message}</p>
+      <button
+        onClick={onRetry}
+        className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+      >
+        Try Again
+      </button>
+    </div>
+  </div>
+);
+
 const PartnersSection = () => {
-  const { partners } = usePartnerStore();
+  const { data: partners, loading, error, refresh } = usePartners();
+
+  if (loading) {
+    return (
+      <AnimatedSection className="py-20 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4 gradient-text">
+              Trusted Technology Partners
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              We collaborate with industry leaders to deliver cutting-edge solutions
+            </p>
+          </div>
+          <LoadingSpinner />
+        </div>
+      </AnimatedSection>
+    );
+  }
+
+  if (error) {
+    return (
+      <AnimatedSection className="py-20 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4 gradient-text">
+              Trusted Technology Partners
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              We collaborate with industry leaders to deliver cutting-edge solutions
+            </p>
+          </div>
+          <ErrorMessage message={`Failed to load partners: ${error}`} onRetry={refresh} />
+        </div>
+      </AnimatedSection>
+    );
+  }
+
+  if (!partners || partners.length === 0) {
+    return (
+      <AnimatedSection className="py-20 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4 gradient-text">
+              Trusted Technology Partners
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              We collaborate with industry leaders to deliver cutting-edge solutions
+            </p>
+          </div>
+          <div className="text-center py-12">
+            <p className="text-gray-600">Partner information will be available soon.</p>
+          </div>
+        </div>
+      </AnimatedSection>
+    );
+  }
 
   return (
     <AnimatedSection className="py-20 bg-white">

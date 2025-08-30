@@ -20,11 +20,11 @@ const Header = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2" onClick={closeMenu}>
-            {logo ? (
-              <img src={logo} alt="Company Logo" className="h-8 w-auto" />
-            ) : (
-              <Database className="h-8 w-8 text-[#04968d]" />
-            )}
+            <img 
+              src="/Untitled designfdfdsd.jpg" 
+              alt="Active Soft Logo" 
+              className="h-10 w-auto"
+            />
             <span className="text-2xl font-bold font-display">Active Soft</span>
           </Link>
 

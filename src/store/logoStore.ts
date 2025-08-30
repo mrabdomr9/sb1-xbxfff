@@ -9,7 +9,7 @@ interface LogoState {
 export const useLogoStore = create<LogoState>()(
   persist(
     (set) => ({
-      logo: null,
+      logo: '/Untitled designfdfdsd.jpg',
       updateLogo: (newLogo) => set({ logo: newLogo }),
     }),
     {

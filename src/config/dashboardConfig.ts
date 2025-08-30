@@ -66,5 +66,11 @@ export const dashboardCards = [
     description: 'Test all database operations',
     icon: TestTube,
     link: '/admin/crud-testing'
+  },
+  {
+    title: 'Auth Testing',
+    description: 'Test authentication and user management',
+    icon: TestTube,
+    link: '/admin/auth-testing'
   }
 ];

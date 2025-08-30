@@ -122,6 +122,10 @@ export function useDatabase<T>(tableName: string) {
 export function useServices() {
   const db = useDatabase('services')
   
+  useEffect(() => {
+    db.loadData()
+  }, [])
+  
   const createService = useCallback(async (serviceData: any) => {
     return servicesOperations.createService(serviceData)
   }, [])
@@ -139,6 +143,10 @@ export function useServices() {
 
 export function useProjects() {
   const db = useDatabase('projects')
+  
+  useEffect(() => {
+    db.loadData({ orderBy: { column: 'order_index', ascending: true } })
+  }, [])
   
   const reorderProjects = useCallback(async (startIndex: number, endIndex: number) => {
     // Implement reordering logic
@@ -162,15 +170,33 @@ export function useProjects() {
 }
 
 export function useClients() {
-  return useDatabase('clients')
+  const db = useDatabase('clients')
+  
+  useEffect(() => {
+    db.loadData({ orderBy: { column: 'created_at', ascending: false } })
+  }, [])
+  
+  return db
 }
 
 export function usePartners() {
-  return useDatabase('partners')
+  const db = useDatabase('partners')
+  
+  useEffect(() => {
+    db.loadData({ orderBy: { column: 'created_at', ascending: false } })
+  }, [])
+  
+  return db
 }
 
 export function useBrochures() {
-  return useDatabase('brochures')
+  const db = useDatabase('brochures')
+  
+  useEffect(() => {
+    db.loadData({ orderBy: { column: 'created_at', ascending: false } })
+  }, [])
+  
+  return db
 }
 
 export function useContactSubmissions() {
@@ -324,6 +350,18 @@ export function useAnalytics() {
     }
   }, [isInitialized, user, loadDashboardMetrics, loadUserActivity, loadSystemHealth])
 
+  // Auto-refresh data every 5 minutes
+  useEffect(() => {
+    if (isInitialized) {
+      const interval = setInterval(() => {
+        loadDashboardMetrics()
+        loadSystemHealth()
+      }, 5 * 60 * 1000) // 5 minutes
+      
+      return () => clearInterval(interval)
+    }
+  }, [isInitialized, loadDashboardMetrics, loadSystemHealth])
+
   return {
     metrics,
     userActivity,
@@ -420,6 +458,27 @@ export function useAuth() {
     return result
   }, [clearAuth])
 
+  const signUp = useCallback(async (email: string, password: string, username?: string, role?: string) => {
+    setLoading(true)
+    setError(null)
+
+    const result = await authService.signUp(email, password, username, role)
+    
+    if (result.error) {
+      setError(result.error)
+    } else if (result.user) {
+      setUser(result.user)
+      setSession(result.session)
+      
+      // Sync with Zustand store
+      if (result.user && result.session) {
+        setAuth(result.user, result.session.access_token)
+      }
+    }
+    
+    setLoading(false)
+    return result
+  }, [setAuth])
   const isAuthenticated = useCallback(() => {
     return authService.isAuthenticated()
   }, [])
@@ -435,6 +494,7 @@ export function useAuth() {
     error,
     signIn,
     signOut,
+    signUp,
     isAuthenticated,
     hasRole
   }

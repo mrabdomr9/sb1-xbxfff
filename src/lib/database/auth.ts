@@ -175,6 +175,31 @@ class AuthService {
   // Sign up new user (for admin use)
   async signUp(email: string, password: string, username: string = 'user', role: string = 'admin'): Promise<AuthResponse> {
     try {
+      // Input validation
+      if (!email || !password) {
+        return {
+          user: null,
+          session: null,
+          error: 'Email and password are required'
+        }
+      }
+
+      if (!this.isValidEmail(email)) {
+        return {
+          user: null,
+          session: null,
+          error: 'Invalid email format'
+        }
+      }
+
+      if (password.length < 8) {
+        return {
+          user: null,
+          session: null,
+          error: 'Password must be at least 8 characters long'
+        }
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email: email.toLowerCase().trim(),
         password,

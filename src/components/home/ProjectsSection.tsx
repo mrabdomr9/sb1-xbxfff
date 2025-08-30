@@ -1,12 +1,60 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Splide, SplideSlide } from '@splidejs/react-splide';
 import '@splidejs/react-splide/css';
 import AnimatedSection from '../AnimatedSection';
-import { useProjectStore } from '../../store/projectStore';
+import { useProjects } from '../../hooks/useDatabaseIntegration';
 import { ArrowRight } from 'lucide-react';
 
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center h-96">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#04968d]"></div>
+    <span className="ml-3 text-gray-600">Loading projects...</span>
+  </div>
+);
+
+const ErrorMessage = ({ message, onRetry }: { message: string; onRetry: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-96 text-center">
+    <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+      <p className="text-red-600 mb-4">{message}</p>
+      <button
+        onClick={onRetry}
+        className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+      >
+        Try Again
+      </button>
+    </div>
+  </div>
+);
+
 const ProjectsSection: React.FC = () => {
-  const projects = useProjectStore((state) => state.projects);
+  const { data: projects, loading, error, refresh } = useProjects();
+
+  if (loading) {
+    return (
+      <AnimatedSection className="h-screen relative bg-[#213c4d] overflow-hidden">
+        <LoadingSpinner />
+      </AnimatedSection>
+    );
+  }
+
+  if (error) {
+    return (
+      <AnimatedSection className="h-screen relative bg-[#213c4d] overflow-hidden">
+        <ErrorMessage message={`Failed to load projects: ${error}`} onRetry={refresh} />
+      </AnimatedSection>
+    );
+  }
+
+  if (!projects || projects.length === 0) {
+    return (
+      <AnimatedSection className="h-screen relative bg-[#213c4d] overflow-hidden flex items-center justify-center">
+        <div className="text-center text-white">
+          <h2 className="text-3xl font-bold mb-4">No Projects Available</h2>
+          <p className="text-gray-300">Check back soon for our latest work!</p>
+        </div>
+      </AnimatedSection>
+    );
+  }
 
   return (
     <AnimatedSection className="h-screen relative bg-[#213c4d] overflow-hidden">

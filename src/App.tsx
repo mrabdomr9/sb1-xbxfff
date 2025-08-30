@@ -24,6 +24,7 @@ import LogoManager from './pages/admin/LogoManager';
 import BrochuresManager from './pages/admin/BrochuresManager';
 import PortfolioManager from './pages/admin/PortfolioManager';
 import CRUDTestingDashboard from './pages/admin/CRUDTestingDashboard';
+import AuthTestDashboard from './pages/admin/AuthTestDashboard';
 
 const VisitorTracker = () => {
   const location = useLocation();
@@ -80,6 +81,7 @@ function App() {
                       <Route path="/brochures" element={<BrochuresManager />} />
                       <Route path="/portfolio" element={<PortfolioManager />} />
                       <Route path="/crud-testing" element={<CRUDTestingDashboard />} />
+                      <Route path="/auth-testing" element={<AuthTestDashboard />} />
                     </Routes>
                   </ProtectedRoute>
                 }

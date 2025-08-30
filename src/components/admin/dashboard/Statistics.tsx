@@ -2,13 +2,15 @@ import React from 'react';
 import { Users, Briefcase, Eye } from 'lucide-react';
 import StatCard from './StatCard';
 import { useStatsStore } from '../../../store/statsStore';
-import { useServicesStore } from '../../../store/servicesStore';
-import { useProjectStore } from '../../../store/projectStore';
+import { useServices, useProjects } from '../../../hooks/useDatabaseIntegration';
 
 const Statistics = () => {
   const visitors = useStatsStore((state) => state.visitors);
-  const services = useServicesStore((state) => state.services.length);
-  const clients = useProjectStore((state) => state.projects.length);
+  const { data: services } = useServices();
+  const { data: projects } = useProjects();
+
+  const servicesCount = services?.length || 0;
+  const projectsCount = projects?.length || 0;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -19,14 +21,14 @@ const Statistics = () => {
         trend={{ value: 12, isPositive: true }}
       />
       <StatCard
-        title="Active Clients"
-        value={clients}
+        title="Active Projects"
+        value={projectsCount}
         icon={Users}
         trend={{ value: 8, isPositive: true }}
       />
       <StatCard
         title="Services Offered"
-        value={services}
+        value={servicesCount}
         icon={Briefcase}
       />
     </div>

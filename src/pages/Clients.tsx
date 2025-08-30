@@ -1,9 +1,30 @@
 import React from 'react';
-import { useClientStore } from '../store/clientStore';
+import { useClients } from '../hooks/useDatabaseIntegration';
 import { Splide, SplideSlide } from '@splidejs/react-splide';
 import '@splidejs/react-splide/css';
 import AnimatedSection from '../components/AnimatedSection';
 import { Building2, Users, Globe2, ArrowRight } from 'lucide-react';
+
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center py-20">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#04968d]"></div>
+    <span className="ml-3 text-gray-600">Loading clients...</span>
+  </div>
+);
+
+const ErrorMessage = ({ message, onRetry }: { message: string; onRetry: () => void }) => (
+  <div className="text-center py-20">
+    <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+      <p className="text-red-600 mb-4">{message}</p>
+      <button
+        onClick={onRetry}
+        className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+      >
+        Try Again
+      </button>
+    </div>
+  </div>
+);
 
 const ClientStats = () => {
   return (
@@ -28,7 +49,75 @@ const ClientStats = () => {
 };
 
 const Clients = () => {
-  const { clients } = useClientStore();
+  const { data: clients, loading, error, refresh } = useClients();
+  
+  // Load clients data on component mount
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen py-20 bg-gradient-to-b from-white to-gray-50">
+        <div className="container mx-auto px-6">
+          <AnimatedSection>
+            <div className="text-center mb-16">
+              <h1 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">Our Trusted Clients</h1>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                We're proud to work with industry leaders who trust us to deliver exceptional solutions
+              </p>
+            </div>
+            <ClientStats />
+            <LoadingSpinner />
+          </AnimatedSection>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen py-20 bg-gradient-to-b from-white to-gray-50">
+        <div className="container mx-auto px-6">
+          <AnimatedSection>
+            <div className="text-center mb-16">
+              <h1 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">Our Trusted Clients</h1>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                We're proud to work with industry leaders who trust us to deliver exceptional solutions
+              </p>
+            </div>
+            <ClientStats />
+            <ErrorMessage message={`Failed to load clients: ${error}`} onRetry={refresh} />
+          </AnimatedSection>
+        </div>
+      </div>
+    );
+  }
+
+  if (!clients || clients.length === 0) {
+    return (
+      <div className="min-h-screen py-20 bg-gradient-to-b from-white to-gray-50">
+        <div className="container mx-auto px-6">
+          <AnimatedSection>
+            <div className="text-center mb-16">
+              <h1 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">Our Trusted Clients</h1>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                We're proud to work with industry leaders who trust us to deliver exceptional solutions
+              </p>
+            </div>
+            <ClientStats />
+            <div className="text-center py-20">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 max-w-md mx-auto">
+                <Building2 className="w-16 h-16 text-blue-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-blue-800 mb-2">Building Our Client Portfolio</h3>
+                <p className="text-blue-600">We're working with amazing clients and will showcase them here soon!</p>
+              </div>
+            </div>
+          </AnimatedSection>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen py-20 bg-gradient-to-b from-white to-gray-50">
