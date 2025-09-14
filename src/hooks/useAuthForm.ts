@@ -24,16 +24,20 @@ export const useAuthForm = () => {
     try {
       setIsSubmitting(true);
       setError(null);
+      console.log('Attempting to sign in with:', data.email);
 
       const result = await signIn(data.email, data.password);
+      console.log('Sign in result:', result);
       
       if (result.error) {
         throw new Error(result.error);
       }
       
+      console.log('Sign in successful, navigating to dashboard');
       navigate('/admin');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Login failed. Please check your credentials and try again.';
+      console.error('Login error:', errorMessage);
       setError(errorMessage);
     } finally {
       setIsSubmitting(false);

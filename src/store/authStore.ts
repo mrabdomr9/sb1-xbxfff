@@ -6,7 +6,7 @@ interface AuthState {
   user: User | null;
   token: string | null;
   isInitialized: boolean;
-  setAuth: (user: User | null, token: string | null) => void;
+  setAuth: (user: User, token: string) => void; // Updated to require user object
   clearAuth: () => void;
   setIsInitialized: (initialized: boolean) => void;
 }
@@ -17,8 +17,14 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       isInitialized: false,
-      setAuth: (user, token) => set({ user, token }),
-      clearAuth: () => set({ user: null, token: null }),
+      setAuth: (user, token) => {
+        console.log('Setting auth in store:', { user, token });
+        set({ user, token });
+      },
+      clearAuth: () => {
+        console.log('Clearing auth from store');
+        set({ user: null, token: null });
+      },
       setIsInitialized: (initialized) => set({ isInitialized: initialized }),
     }),
     {

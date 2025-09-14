@@ -2,7 +2,7 @@ export interface User {
   id: string;
   username: string;
   email: string;
-  role: 'admin';
+  role: string; // Changed from 'admin' to string to match AuthUser
 }
 
 export interface LoginCredentials {

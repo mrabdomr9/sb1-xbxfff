@@ -106,6 +106,7 @@ class AuthService {
               username: newUser.username,
               role: newUser.role
             }
+            console.log('Created new user profile:', this.currentUser)
             return
           }
         } else {
@@ -114,11 +115,15 @@ class AuthService {
         }
       }
 
-      this.currentUser = {
-        id: data.id,
-        email: data.email,
-        username: data.username,
-        role: data.role
+      // Successfully loaded user profile
+      if (data) {
+        console.log('Loaded user profile:', data)
+        this.currentUser = {
+          id: data.id,
+          email: data.email,
+          username: data.username,
+          role: data.role
+        }
       }
     } catch (error) {
       console.error('Error loading user profile:', error)

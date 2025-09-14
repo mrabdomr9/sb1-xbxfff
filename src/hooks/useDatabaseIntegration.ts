@@ -436,26 +436,26 @@ export function useAuth() {
   }, [setAuth, clearAuth, setIsInitialized])
 
   const signIn = useCallback(async (email: string, password: string) => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
-    const result = await authService.signIn(email, password)
+    const result = await authService.signIn(email, password);
     
     if (result.error) {
-      setError(result.error)
+      setError(result.error);
     } else {
-      setUser(result.user)
-      setSession(result.session)
+      setUser(result.user);
+      setSession(result.session);
       
       // Sync with Zustand store
       if (result.user && result.session) {
-        setAuth(result.user, result.session.access_token)
+        setAuth(result.user, result.session.access_token);
       }
     }
     
-    setLoading(false)
-    return result
-  }, [setAuth])
+    setLoading(false);
+    return result;
+  }, [setAuth]);
 
   const signOut = useCallback(async () => {
     setLoading(true)
@@ -495,8 +495,8 @@ export function useAuth() {
     return result
   }, [setAuth])
   const isAuthenticated = useCallback(() => {
-    return authService.isAuthenticated()
-  }, [])
+    return authService.isAuthenticated();
+  }, []);
 
   const hasRole = useCallback((role: string) => {
     return authService.hasRole(role)
