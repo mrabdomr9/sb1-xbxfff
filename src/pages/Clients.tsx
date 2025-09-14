@@ -2,8 +2,26 @@ import React, { useEffect } from 'react';
 import { useClients } from '../hooks/useDatabaseIntegration';
 import { Splide, SplideSlide } from '@splidejs/react-splide';
 import '@splidejs/react-splide/css';
+import SEOHead from '../components/SEOHead';
 import AnimatedSection from '../components/AnimatedSection';
 import { Building2, Users, Globe2, ArrowRight } from 'lucide-react';
+
+const clientsStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Active Soft Client Portfolio",
+  "description": "Trusted by 200+ clients worldwide including technology corporations, healthcare networks, and educational institutions",
+  "mainEntity": {
+    "@type": "Organization",
+    "name": "Active Soft",
+    "hasCredential": [
+      {
+        "@type": "EducationalOccupationalCredential",
+        "credentialCategory": "Oracle Certified Professional"
+      }
+    ]
+  }
+};
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center py-20">
@@ -121,6 +139,13 @@ const Clients = () => {
 
   return (
     <div className="min-h-screen py-20 bg-gradient-to-b from-white to-gray-50">
+      <SEOHead
+        title="Our Clients - Success Stories | Oracle ERP Implementations - Active Soft"
+        description="Discover Active Soft's client success stories. 200+ satisfied clients across 15+ countries trust us for Oracle ERP implementation and custom desktop solutions. View our portfolio of successful projects."
+        keywords="Active Soft clients, Oracle ERP success stories, client testimonials, ERP implementation case studies, enterprise software clients"
+        url="https://activesoft.com/clients"
+        structuredData={clientsStructuredData}
+      />
       <div className="container mx-auto px-6">
         <AnimatedSection>
           <div className="text-center mb-16">

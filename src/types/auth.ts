@@ -14,3 +14,8 @@ export interface AuthResponse {
   user: User;
   token: string;
 }
+
+export interface LoginFormData {
+  email: string;
+  password: string;
+}

@@ -20,18 +20,25 @@ class AuthService {
   private currentSession: Session | null = null
 
   // Initialize auth state
-  async initialize(): Promise<void> {
+  async initialize(): Promise<boolean> {
     try {
       const { data: { session }, error } = await supabase.auth.getSession()
       
       if (error) {
         console.error('Auth initialization error:', error)
-        return
+        // Clear any invalid stored tokens
+        this.currentUser = null
+        this.currentSession = null
+        return false
       }
 
       if (session) {
         this.currentSession = session
         await this.loadUserProfile(session.user.id)
+      } else {
+        // No valid session found
+        this.currentUser = null
+        this.currentSession = null
       }
 
       // Listen for auth changes
@@ -46,8 +53,14 @@ class AuthService {
           this.currentSession = null
         }
       })
+      
+      return true
     } catch (error) {
       console.error('Auth initialization failed:', error)
+      // Clear any invalid stored tokens
+      this.currentUser = null
+      this.currentSession = null
+      return false
     }
   }
 
@@ -61,29 +74,44 @@ class AuthService {
         .single()
 
       if (error) {
-        console.error('Failed to load user profile:', error)
-        // If user doesn't exist in users table, the trigger should have created it
-        // Wait a moment and try again
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        const { data: retryData, error: retryError } = await supabase
-          .from('users')
-          .select('id, username, email, role')
-          .eq('id', userId)
-          .single()
+        // If user doesn't exist in users table (PGRST116 error), create it
+        if (error.code === 'PGRST116' || error.message.includes('JSON object requested, multiple (or no) rows returned')) {
+          console.log('User profile not found, creating new profile for user:', userId)
+          
+          // Get user data from auth
+          const { data: authUser } = await supabase.auth.getUser()
+          
+          if (authUser.user) {
+            // Create user profile in public.users table
+            const { data: newUser, error: createError } = await supabase
+              .from('users')
+              .insert({
+                id: userId,
+                email: authUser.user.email || '',
+                username: authUser.user.user_metadata?.username || authUser.user.email?.split('@')[0] || 'user',
+                role: authUser.user.user_metadata?.role || 'admin',
+                password_hash: null
+              })
+              .select('id, username, email, role')
+              .single()
 
-        if (retryError) {
-          console.error('User profile still not found after retry:', retryError)
+            if (createError) {
+              console.error('Failed to create user profile:', createError)
+              return
+            }
+
+            this.currentUser = {
+              id: newUser.id,
+              email: newUser.email,
+              username: newUser.username,
+              role: newUser.role
+            }
+            return
+          }
+        } else {
+          console.error('Failed to load user profile:', error)
           return
         }
-
-        this.currentUser = {
-          id: retryData.id,
-          email: retryData.email,
-          username: retryData.username,
-          role: retryData.role
-        }
-        return
       }
 
       this.currentUser = {
@@ -130,7 +158,7 @@ class AuthService {
           return {
             user: null,
             session: null,
-            error: 'Invalid email or password. If you are the administrator, please ensure the admin user has been created in your Supabase Dashboard under Authentication > Users.'
+            error: 'Invalid email or password. Please make sure you have created an admin user in your Supabase Dashboard under Authentication > Users. The default credentials are: email: admin@activesoft.com, password: admin123'
           }
         }
         
@@ -138,7 +166,7 @@ class AuthService {
           return {
             user: null,
             session: null,
-            error: 'Please confirm your email address before signing in.'
+            error: 'Please confirm your email address before signing in. Check your email or create a confirmed user in Supabase Dashboard.'
           }
         }
         
@@ -167,7 +195,7 @@ class AuthService {
       return {
         user: null,
         session: null,
-        error: 'Sign in failed. Please check your internet connection and try again.'
+        error: 'Sign in failed. Please check your internet connection and try again. If the problem persists, verify that your Supabase credentials are correctly configured in your .env file.'
       }
     }
   }

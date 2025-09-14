@@ -3,7 +3,27 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Check, Users, Target, Gift, Loader2 } from 'lucide-react';
 import { Splide, SplideSlide } from '@splidejs/react-splide';
 import '@splidejs/react-splide/css';
+import SEOHead from '../components/SEOHead';
 import { useServices } from '../hooks/useDatabaseIntegration';
+
+const servicesStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "Oracle ERP Implementation Services",
+  "description": "Professional Oracle ERP implementation and customization services for enterprises worldwide",
+  "provider": {
+    "@type": "Organization",
+    "name": "Active Soft"
+  },
+  "areaServed": "Worldwide",
+  "serviceType": [
+    "Oracle ERP Cloud Implementation",
+    "Custom Desktop Application Development", 
+    "Business Intelligence Solutions",
+    "Supply Chain Management",
+    "Healthcare Management Systems"
+  ]
+};
 
 const ErrorMessage = ({ message, onRetry }: { message: string; onRetry: () => void }) => (
   <div className="min-h-screen py-20 bg-gradient-to-b from-white to-gray-50">
@@ -66,6 +86,13 @@ const Services = () => {
 
   return (
     <div className="min-h-screen py-12 sm:py-16 md:py-20 bg-gradient-to-b from-white to-gray-50">
+      <SEOHead
+        title="Oracle ERP Implementation Services | Custom Desktop Applications - Active Soft"
+        description="Discover Active Soft's comprehensive Oracle ERP implementation, custom Windows desktop applications, and enterprise solutions. Professional services with 15+ years experience and 500+ successful implementations."
+        keywords="Oracle ERP services, custom desktop applications, enterprise software, ERP implementation, business automation, Oracle consulting"
+        url="https://activesoft.com/services"
+        structuredData={servicesStructuredData}
+      />
       <div className="container mx-auto px-4 sm:px-6">
         <div className="text-center mb-8 sm:mb-12 md:mb-16">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 gradient-text">

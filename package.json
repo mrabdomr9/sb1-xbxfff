@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "setup:auth": "node src/scripts/setupAuth.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
@@ -19,6 +20,7 @@
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-helmet-async": "^2.0.5",
     "react-hook-form": "^7.51.0",
     "react-router-dom": "^6.22.3",
     "zod": "^3.22.4",

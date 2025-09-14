@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import PerformanceOptimizer from './components/PerformanceOptimizer';
 import { useStatsStore } from './store/statsStore';
 import { useStoreSync } from './hooks/useStoreSync';
 import { useAuth } from './hooks/useDatabaseIntegration';
@@ -52,6 +53,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+        <PerformanceOptimizer />
         <VisitorTracker />
         <div className="flex flex-col min-h-screen">
           <Header />

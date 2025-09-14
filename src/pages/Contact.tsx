@@ -3,10 +3,29 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Mail, Phone, Building2, Clock, Globe2, Send, MessageSquare, Loader2 } from 'lucide-react';
+import SEOHead from '../components/SEOHead';
 import { useContactSubmissions } from '../hooks/useDatabaseIntegration';
 import AnimatedSection from '../components/AnimatedSection';
 import { Splide, SplideSlide } from '@splidejs/react-splide';
 import '@splidejs/react-splide/css';
+
+const contactStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  "name": "Contact Active Soft",
+  "description": "Get in touch with Active Soft for Oracle ERP implementation and custom desktop application development",
+  "mainEntity": {
+    "@type": "Organization",
+    "name": "Active Soft",
+    "telephone": ["+20-1225077433", "+20-1006467081"],
+    "email": "support@activesoft.com",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Sadat City",
+      "addressCountry": "Egypt"
+    }
+  }
+};
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -135,6 +154,13 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen py-20 bg-gradient-to-b from-white to-gray-50">
+      <SEOHead
+        title="Contact Us - Oracle ERP Consultation | Get Quote - Active Soft"
+        description="Contact Active Soft for Oracle ERP implementation, custom desktop applications, and enterprise solutions. Free consultation available. 24/7 support, 1-hour response time. Get started today."
+        keywords="contact Active Soft, Oracle ERP consultation, custom software quote, enterprise solutions contact, ERP implementation inquiry"
+        url="https://activesoft.com/contact"
+        structuredData={contactStructuredData}
+      />
       <div className="container mx-auto px-6">
         <AnimatedSection>
           <div className="text-center mb-16">

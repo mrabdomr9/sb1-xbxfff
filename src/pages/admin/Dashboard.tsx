@@ -3,6 +3,7 @@ import DashboardHeader from '../../components/admin/DashboardHeader';
 import DashboardCard from '../../components/admin/DashboardCard';
 import Statistics from '../../components/admin/dashboard/Statistics';
 import DatabaseStatus from '../../components/admin/DatabaseStatus';
+import SEOAnalytics from '../../components/admin/SEOAnalytics';
 import { dashboardCards } from '../../config/dashboardConfig';
 
 const Dashboard = () => {
@@ -16,6 +17,11 @@ const Dashboard = () => {
         {/* Database Status Component */}
         <div className="mb-8">
           <DatabaseStatus />
+        </div>
+        
+        {/* SEO Analytics Component */}
+        <div className="mb-8">
+          <SEOAnalytics />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

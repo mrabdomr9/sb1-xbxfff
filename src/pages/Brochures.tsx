@@ -1,9 +1,22 @@
 import React from 'react';
 import { FileDown, FileText, Calendar, Download } from 'lucide-react';
+import SEOHead from '../components/SEOHead';
 import { useBrochures } from '../hooks/useDatabaseIntegration';
 import AnimatedSection from '../components/AnimatedSection';
 import { Splide, SplideSlide } from '@splidejs/react-splide';
 import '@splidejs/react-splide/css';
+
+const brochuresStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Active Soft Service Brochures",
+  "description": "Download comprehensive service brochures for Oracle ERP implementation and custom desktop application development",
+  "mainEntity": {
+    "@type": "DigitalDocument",
+    "name": "Enterprise Software Solutions Brochures",
+    "description": "Detailed information about Active Soft's Oracle ERP and desktop application services"
+  }
+};
 
 const BrochureStats = () => {
   return (
@@ -93,6 +106,13 @@ const Brochures = () => {
   }
   return (
     <div className="min-h-screen py-20 bg-gradient-to-b from-white to-gray-50">
+      <SEOHead
+        title="Service Brochures - Oracle ERP & Desktop Solutions | Download - Active Soft"
+        description="Download Active Soft's comprehensive service brochures for Oracle ERP implementation, custom desktop applications, and enterprise solutions. Get detailed information about our services."
+        keywords="Active Soft brochures, Oracle ERP brochure download, enterprise software brochures, custom application brochures, ERP implementation guide"
+        url="https://activesoft.com/brochures"
+        structuredData={brochuresStructuredData}
+      />
       <div className="container mx-auto px-6">
         <AnimatedSection>
           <div className="text-center mb-16">

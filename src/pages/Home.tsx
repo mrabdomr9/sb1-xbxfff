@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Award, Users, Globe, CheckCircle, Zap, Shield, Clock, Database, Monitor } from 'lucide-react';
+import SEOHead from '../components/SEOHead';
 import AnimatedSection from '../components/AnimatedSection';
 import PartnersSection from '../components/home/PartnersSection';
 import MarketingSection from '../components/home/MarketingSection';
@@ -8,6 +9,38 @@ import ProjectsSection from '../components/home/ProjectsSection';
 import FeaturesSection from '../components/home/FeaturesSection';
 import DifferentiatorsSection from '../components/home/DifferentiatorsSection';
 import { useStatsStore } from '../store/statsStore';
+
+const homeStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Active Soft",
+  "url": "https://activesoft.com",
+  "logo": "https://activesoft.com/Untitled designfdfdsd.jpg",
+  "description": "Leading Oracle ERP implementation and custom desktop application development company in Egypt",
+  "foundingDate": "2008",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Sadat City",
+    "addressCountry": "Egypt"
+  },
+  "contactPoint": [
+    {
+      "@type": "ContactPoint",
+      "telephone": "+20-1225077433",
+      "contactType": "customer support"
+    },
+    {
+      "@type": "ContactPoint", 
+      "telephone": "+20-1006467081",
+      "contactType": "sales"
+    }
+  ],
+  "serviceType": [
+    "Oracle ERP Implementation",
+    "Custom Desktop Application Development",
+    "Enterprise Software Solutions"
+  ]
+};
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center">
@@ -282,6 +315,13 @@ const CTASection = () => {
 const Home: React.FC = () => {
   return (
     <div className="min-h-screen">
+      <SEOHead
+        title="Active Soft - Oracle ERP Implementation & Custom Desktop Solutions | Egypt's Leading Software Company"
+        description="Transform your business with Active Soft's Oracle ERP implementation, custom Windows desktop applications, and enterprise solutions. 15+ years experience, 500+ successful implementations across 15+ countries."
+        keywords="Oracle ERP implementation, custom desktop applications, enterprise software solutions, Windows desktop development, business automation, ERP consulting Egypt"
+        url="https://activesoft.com/"
+        structuredData={homeStructuredData}
+      />
       <HeroSection />
       <ExpertiseSection />
       <DifferentiatorsSection />

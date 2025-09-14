@@ -398,18 +398,25 @@ export function useAuth() {
     setIsInitialized(false)
     
     // Initialize auth service and sync with Zustand store
-    authService.initialize().then(() => {
-      const currentUser = authService.getCurrentUser()
-      const currentSession = authService.getCurrentSession()
-      
-      setUser(currentUser)
-      setSession(currentSession)
-      
-      // Sync with Zustand store
-      if (currentUser && currentSession) {
-        setAuth(currentUser, currentSession.access_token)
+    authService.initialize().then((success) => {
+      if (success) {
+        const currentUser = authService.getCurrentUser()
+        const currentSession = authService.getCurrentSession()
+        
+        setUser(currentUser)
+        setSession(currentSession)
+        
+        // Sync with Zustand store
+        if (currentUser && currentSession) {
+          setAuth(currentUser, currentSession.access_token)
+        } else {
+          // Clear Zustand store if no valid session exists
+          clearAuth()
+        }
       } else {
-        // Clear Zustand store if no valid session exists
+        // Initialization failed, clear everything
+        setUser(null)
+        setSession(null)
         clearAuth()
       }
       
@@ -418,6 +425,10 @@ export function useAuth() {
       setIsInitialized(true)
     }).catch((err) => {
       console.error('Failed to initialize auth service:', err)
+      // Clear everything on error
+      setUser(null)
+      setSession(null)
+      clearAuth()
       setLoading(false)
       // Set initialization to true even on error so app doesn't hang
       setIsInitialized(true)

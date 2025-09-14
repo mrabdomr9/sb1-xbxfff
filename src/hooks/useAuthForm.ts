@@ -14,9 +14,13 @@ export const useAuthForm = () => {
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: ''
+    }
   });
 
-  const handleSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (data: LoginFormData) => {
     try {
       setIsSubmitting(true);
       setError(null);
@@ -29,7 +33,8 @@ export const useAuthForm = () => {
       
       navigate('/admin');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      const errorMessage = err instanceof Error ? err.message : 'Login failed. Please check your credentials and try again.';
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -37,7 +42,7 @@ export const useAuthForm = () => {
 
   return {
     form,
-    handleSubmit: form.handleSubmit(handleSubmit),
+    handleSubmit: form.handleSubmit(onSubmit),
     isSubmitting,
     error,
   };

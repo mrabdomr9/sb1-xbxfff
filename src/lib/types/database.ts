@@ -201,7 +201,7 @@ export interface Database {
           id: string
           username: string
           email: string
-          password_hash: string
+          password_hash: string | null
           role: string
           created_at: string
           updated_at: string
@@ -210,7 +210,7 @@ export interface Database {
           id?: string
           username: string
           email: string
-          password_hash: string
+          password_hash?: string | null
           role?: string
           created_at?: string
           updated_at?: string
@@ -219,7 +219,7 @@ export interface Database {
           id?: string
           username?: string
           email?: string
-          password_hash?: string
+          password_hash?: string | null
           role?: string
           updated_at?: string
         }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Lock } from 'lucide-react';
+import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuthForm } from '../../hooks/useAuthForm';
 import Button from '../common/Button';
 import Input from '../common/Input';
@@ -23,7 +23,17 @@ const LoginForm = () => {
         
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-sm text-red-600">{error}</p>
+            <div className="flex items-start">
+              <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 mr-2 flex-shrink-0" />
+              <div>
+                <p className="text-sm text-red-600">{error}</p>
+                {error.includes('Invalid email or password') && (
+                  <p className="text-xs text-red-500 mt-2">
+                    Please make sure you have created an admin user in your Supabase Dashboard under Authentication {'>'} Users.
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -56,6 +66,12 @@ const LoginForm = () => {
             {isSubmitting ? 'Signing in...' : 'Sign in'}
           </Button>
         </form>
+        
+        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+          <p className="text-xs text-blue-700">
+            <strong>First time setup:</strong> Create an admin user in your Supabase Dashboard under Authentication {'>'} Users.
+          </p>
+        </div>
       </Card>
     </div>
   );
