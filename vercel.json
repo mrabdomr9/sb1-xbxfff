@@ -13,3 +13,16 @@
   },
   "buildCommand": "npm install --legacy-peer-deps && npm run build"
 }
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)\\.(js|css|html|png|jpg|jpeg|svg|woff2?)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    }
+  ]
+}
