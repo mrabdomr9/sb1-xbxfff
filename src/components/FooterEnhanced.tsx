@@ -130,8 +130,8 @@ const FooterEnhanced = () => {
                 </div>
                 <div>
                   <p className="text-gray-400 text-sm">Email</p>
-                  <a href="mailto:support@activesoft.com" className="text-white hover:text-[#04968d] transition-colors">
-                    support@activesoft.com
+                  <a href="mailto:info@activesoft.net" className="text-white hover:text-[#04968d] transition-colors">
+                    info@activesoft.net
                   </a>
                 </div>
               </div>
